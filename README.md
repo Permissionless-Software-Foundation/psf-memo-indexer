@@ -64,6 +64,21 @@ See `.env-example`. Key variables:
 npm test
 ```
 
+## Production (Docker)
+
+Docker files live under [production/docker](./production/docker), matching [psf-slp-indexer-g2](https://github.com/Permissionless-Software-Foundation/psf-slp-indexer-g2):
+
+```bash
+cd production/docker
+cp block-indexer/.env-example block-indexer/.env
+cp tx-indexer/.env-example tx-indexer/.env
+cp memo-db/.env-example memo-db/.env
+docker-compose build
+docker-compose up -d
+```
+
+Services: `memo-db` (port 5021), `block-indexer`, `tx-indexer` (port 5455).
+
 ## License
 
 GPL v3

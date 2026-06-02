@@ -1,0 +1,52 @@
+# Start the service with: docker-compose up -d
+
+services:
+  memo-db:
+    build:
+      context: ../../psf-memo-db
+      dockerfile: ./memo-db/Dockerfile
+    container_name: memo-db
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '10'
+    ports:
+      - '5021:5021'
+    volumes:
+      - ../data/leveldb:/home/safeuser/psf-memo-db/leveldb
+      - ./memo-db/start-memo-db.sh:/home/safeuser/psf-memo-db/start-memo-db.sh
+      - ./memo-db/.env:/home/safeuser/psf-memo-db/.env
+    restart: always
+
+  tx-indexer:
+    build:
+      context: ../..
+      dockerfile: production/docker/tx-indexer/Dockerfile
+    container_name: memo-tx-indexer
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '10'
+    ports:
+      - '5455:5455'
+    volumes:
+      - ./tx-indexer/start-tx-indexer.sh:/home/safeuser/psf-memo-indexer/start-tx-indexer.sh
+      - ./tx-indexer/.env:/home/safeuser/psf-memo-indexer/.env
+    restart: always
+
+  block-indexer:
+    build:
+      context: ../..
+      dockerfile: production/docker/block-indexer/Dockerfile
+    container_name: memo-block-indexer
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '10'
+    volumes:
+      - ./block-indexer/start-block-indexer.sh:/home/safeuser/psf-memo-indexer/start-block-indexer.sh
+      - ./block-indexer/.env:/home/safeuser/psf-memo-indexer/.env
+    restart: always
