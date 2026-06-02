@@ -11,6 +11,10 @@ Two processes:
 
 Data is stored in [psf-memo-db](../psf-memo-db) via REST.
 
+## Developer documentation
+
+Architecture, theory of operation, and design tradeoffs: [dev-docs/](./dev-docs/README.md).
+
 ## Requirements
 
 - node ^20
