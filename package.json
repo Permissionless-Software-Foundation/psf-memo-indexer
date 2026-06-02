@@ -1,0 +1,32 @@
+{
+  "name": "psf-memo-indexer",
+  "version": "1.0.0",
+  "description": "Indexes Memo protocol transactions on Bitcoin Cash.",
+  "type": "module",
+  "scripts": {
+    "block-indexer": "node --max-old-space-size=8192 psf-memo-block-indexer.js",
+    "tx-indexer": "node --max-old-space-size=4096 psf-memo-tx-indexer.js",
+    "test": "c8 --reporter=text mocha --exit --recursive test/unit/",
+    "lint": "standard --env mocha --fix"
+  },
+  "author": "Chris Troutner",
+  "license": "GPLV3",
+  "dependencies": {
+    "@chris.troutner/retry-queue": "1.0.11",
+    "@psf/bch-js": "7.1.11",
+    "@psf/bitcoincash-zmq-decoder": "0.1.5",
+    "axios": "1.12.2",
+    "dotenv": "17.2.3",
+    "express": "5.1.0",
+    "p-queue": "8.1.1",
+    "p-retry": "6.2.1",
+    "zeromq": "6.5.0"
+  },
+  "devDependencies": {
+    "c8": "10.1.3",
+    "chai": "6.2.0",
+    "mocha": "11.7.4",
+    "sinon": "21.0.0",
+    "standard": "17.1.2"
+  }
+}
