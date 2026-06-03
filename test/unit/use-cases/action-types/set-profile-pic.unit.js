@@ -22,6 +22,7 @@ describe('#handleSetProfilePic', () => {
       txid: 'abc123',
       signerAddr: 'bitcoincash:qptest',
       seen: 12345,
+      blockHeight: 600200,
       decoded: { pushDatas: [combined] }
     })
 
@@ -30,5 +31,6 @@ describe('#handleSetProfilePic', () => {
     const [addr, data] = adapters.profilePicDb.create.firstCall.args
     assert.equal(addr, 'bitcoincash:qptest')
     assert.equal(data.url, 'https://memo.cash/img/abc')
+    assert.equal(data.blockHeight, 600200)
   })
 })

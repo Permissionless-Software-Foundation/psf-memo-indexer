@@ -2,16 +2,16 @@ import { txHashFromPush, logProcessError } from './helpers.js'
 import { TX_HASH_LENGTH } from '../../lib/memo-codes.js'
 
 export async function handleLike (ctx) {
-  const { adapters, txid, signerAddr, decoded, seen, txDetails } = ctx
+  const { adapters, txid, signerAddr, decoded, seen, txDetails, blockHeight } = ctx
   const { pushDatas } = decoded
 
   if (pushDatas.length !== 2) {
-    await logProcessError(adapters, txid, `invalid like push data count ${pushDatas.length}`)
+    await logProcessError(adapters, txid, `invalid like push data count ${pushDatas.length}`, blockHeight)
     return
   }
 
   if (pushDatas[1].length !== TX_HASH_LENGTH) {
-    await logProcessError(adapters, txid, 'like post tx hash wrong size')
+    await logProcessError(adapters, txid, 'like post tx hash wrong size', blockHeight)
     return
   }
 
@@ -36,7 +36,8 @@ export async function handleLike (ctx) {
     addr: signerAddr,
     postTxid,
     seen,
-    tip
+    tip,
+    blockHeight
   }
   await adapters.likeDb.create(txid, likeData)
 }

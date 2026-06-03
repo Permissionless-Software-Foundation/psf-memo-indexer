@@ -2,16 +2,16 @@ import { logProcessError } from './helpers.js'
 import { PK_HASH_LENGTH, PREFIX_UNFOLLOW } from '../../lib/memo-codes.js'
 
 export async function handleFollow (ctx) {
-  const { adapters, txid, signerAddr, decoded, seen } = ctx
+  const { adapters, txid, signerAddr, decoded, seen, blockHeight } = ctx
   const { pushDatas, prefix } = decoded
 
   if (pushDatas.length !== 2) {
-    await logProcessError(adapters, txid, `invalid follow push data count ${pushDatas.length}`)
+    await logProcessError(adapters, txid, `invalid follow push data count ${pushDatas.length}`, blockHeight)
     return
   }
 
   if (pushDatas[1].length !== PK_HASH_LENGTH) {
-    await logProcessError(adapters, txid, 'follow pk hash wrong size')
+    await logProcessError(adapters, txid, 'follow pk hash wrong size', blockHeight)
     return
   }
 
@@ -24,6 +24,7 @@ export async function handleFollow (ctx) {
     followeePkHash,
     unfollow,
     txid,
-    seen
+    seen,
+    blockHeight
   })
 }

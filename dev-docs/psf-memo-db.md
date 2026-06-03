@@ -86,12 +86,13 @@ All routes are under `/level` with a consistent CRUD pattern generated from `ENT
 | Method | Path | Query params |
 |--------|------|----------------|
 | `GET` | `/profile/recent` | `limit` (default 100, max 100), `offset` (default 0) |
+| `GET` | `/posts/recent` | `limit` (default 100, max 100), `offset` (default 0) |
 
-Returns profiles sorted by **block height** (newest first), using each profile’s `txid` to look up `blockHeight` in `ptxs`. Tie-breaker: `seen` timestamp descending.
+Returns profiles or posts sorted by **block height** (newest first), using the `blockHeight` field stored on each entity document at indexing time. Tie-breaker: `seen` timestamp descending.
 
 The `seen` field is **Unix epoch milliseconds** from the block header time (`block.time * 1000` at indexing time).
 
-Response shape:
+Response shape (`/profile/recent`):
 
 ```json
 {
@@ -108,7 +109,24 @@ Response shape:
 }
 ```
 
-Implementation: `profile-query` adapter (LevelDB scan) → `list-recent-profiles` use case → `/profile` REST controller.
+Response shape (`/posts/recent`):
+
+```json
+{
+  "posts": [
+    {
+      "txid": "...",
+      "addr": "bitcoincash:q...",
+      "text": "...",
+      "seen": 1500000000000,
+      "blockHeight": 600000
+    }
+  ],
+  "pagination": { "limit": 100, "offset": 0, "total": 42, "hasMore": false }
+}
+```
+
+Implementation: `profile-query` / `post-query` adapter (LevelDB scan) → `list-recent-profiles` / `list-recent-posts` use case → REST controller.
 
 **Tradeoff:** Full scan of `profiles` on each request; suitable for moderate corpus sizes. A height-indexed store would be needed for very large archives.
 
@@ -156,6 +174,22 @@ createEntityDb('post', 'txid', 'postData')
 ## Data modeling notes
 
 **Not normalized like SQL.** LevelDB stores are document keyed for fast lookup by txid or address, similar to the Go `db/item/memo` objects but without sharding.
+
+**Denormalized block height.** Every entity written by the indexer includes a `blockHeight` field (the block in which the memo transaction was confirmed, or `tip + 1` for unconfirmed txs). This avoids ptx lookups when serving `/recent` query routes. The `ptxs` store remains for idempotency only.
+
+Common fields on indexed documents:
+
+| Entity | Key | Stored fields (includes) |
+|--------|-----|--------------------------|
+| post | txid | `addr`, `text`, `seen`, `blockHeight` |
+| profile | addr | `text`, `txid`, `seen`, `addr`, `blockHeight` |
+| name | addr | `name`, `txid`, `seen`, `addr`, `blockHeight` |
+| profilePic | addr | `url`, `txid`, `seen`, `addr`, `blockHeight` |
+| like | txid | `addr`, `postTxid`, `seen`, `tip`, `blockHeight` |
+| follow | composite key | `followerAddr`, `followeePkHash`, `unfollow`, `txid`, `seen`, `blockHeight` |
+| postParent / postChild | txid | `parentTxid`, `childTxid`, `blockHeight` |
+| room | composite key | `room`, `txid`, `seen`, `type`, `blockHeight` (+ `addr` for follows) |
+| processError | txid | `error`, `ts`, `blockHeight` |
 
 **No secondary indexes in v1.** Queries like “all posts by address” may require scanning or a future `memo-query` adapter—out of scope for the indexer write path.
 

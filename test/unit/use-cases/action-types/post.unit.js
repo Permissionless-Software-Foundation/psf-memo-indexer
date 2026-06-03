@@ -19,6 +19,7 @@ describe('#handlePost', () => {
       txid: 'abc123',
       signerAddr: 'bitcoincash:qptest',
       seen: 1000,
+      blockHeight: 600100,
       decoded: {
         action: 'post',
         prefix: PREFIX_POST,
@@ -29,5 +30,6 @@ describe('#handlePost', () => {
     assert.equal(create.callCount, 1)
     assert.equal(create.firstCall.args[0], 'abc123')
     assert.equal(create.firstCall.args[1].text, 'hello memo')
+    assert.equal(create.firstCall.args[1].blockHeight, 600100)
   })
 })

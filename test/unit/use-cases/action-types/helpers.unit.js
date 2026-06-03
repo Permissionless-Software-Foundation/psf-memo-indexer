@@ -1,7 +1,9 @@
 import { assert } from 'chai'
+import sinon from 'sinon'
 import {
   normalizeTwoPushMemoDatas,
-  stripLeadingEmptyPushes
+  stripLeadingEmptyPushes,
+  logProcessError
 } from '../../../../src/use-cases/action-types/helpers.js'
 import { PREFIX_SET_PROFILE_PIC, PREFIX_POST } from '../../../../src/lib/memo-codes.js'
 
@@ -50,6 +52,20 @@ describe('#action-types/helpers', () => {
       const result = stripLeadingEmptyPushes([Buffer.alloc(0), payload])
       assert.equal(result.length, 1)
       assert.deepEqual(result[0], payload)
+    })
+  })
+
+  describe('#logProcessError', () => {
+    it('should store blockHeight on process error records', async () => {
+      const create = sinon.stub().resolves()
+      const adapters = { processErrorDb: { create } }
+
+      await logProcessError(adapters, 'tx1', 'bad data', 600100)
+
+      assert.equal(create.callCount, 1)
+      assert.equal(create.firstCall.args[0], 'tx1')
+      assert.equal(create.firstCall.args[1].error, 'bad data')
+      assert.equal(create.firstCall.args[1].blockHeight, 600100)
     })
   })
 })

@@ -4,9 +4,9 @@
 
 import { isMemoPrefix } from '../../lib/memo-codes.js'
 
-export async function logProcessError (adapters, txid, error) {
+export async function logProcessError (adapters, txid, error, blockHeight) {
   try {
-    await adapters.processErrorDb.create(txid, { error, ts: Date.now() })
+    await adapters.processErrorDb.create(txid, { error, ts: Date.now(), blockHeight })
   } catch (err) {
     console.error('Failed to log process error:', err.message)
   }
