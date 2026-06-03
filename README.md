@@ -63,6 +63,7 @@ See `.env-example`. Key variables:
 | `TX_REST_API_PORT` | `5455` | TX indexer control API |
 | `FILTER_CONCURRENCY` | `20` | Parallel Memo tx detection per block |
 | `MEMO_TX_CONCURRENCY` | `20` | Parallel Memo tx processing per block |
+| `DEBUG_LEVEL` | `0` | `0` = block summary only; `1` = log each Memo tx action type and success/failure |
 
 ## Tests
 

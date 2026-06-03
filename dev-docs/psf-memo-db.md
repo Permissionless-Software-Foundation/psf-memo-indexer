@@ -89,12 +89,20 @@ All routes are under `/level` with a consistent CRUD pattern generated from `ENT
 
 Returns profiles sorted by **block height** (newest first), using each profile’s `txid` to look up `blockHeight` in `ptxs`. Tie-breaker: `seen` timestamp descending.
 
+The `seen` field is **Unix epoch milliseconds** from the block header time (`block.time * 1000` at indexing time).
+
 Response shape:
 
 ```json
 {
   "profiles": [
-    { "addr": "bitcoincash:q...", "text": "...", "txid": "...", "seen": 123, "blockHeight": 600000 }
+    {
+      "addr": "bitcoincash:q...",
+      "text": "...",
+      "txid": "...",
+      "seen": 1500000000000,
+      "blockHeight": 600000
+    }
   ],
   "pagination": { "limit": 100, "offset": 0, "total": 42, "hasMore": false }
 }

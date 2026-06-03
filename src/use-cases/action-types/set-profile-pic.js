@@ -1,9 +1,9 @@
-import { utf8FromPush, logProcessError } from './helpers.js'
+import { utf8FromPush, logProcessError, normalizeTwoPushMemoDatas } from './helpers.js'
 import { MAX_POST_SIZE } from '../../lib/memo-codes.js'
 
 export async function handleSetProfilePic (ctx) {
   const { adapters, txid, signerAddr, decoded, seen } = ctx
-  const { pushDatas } = decoded
+  const pushDatas = normalizeTwoPushMemoDatas(decoded.pushDatas)
 
   if (pushDatas.length !== 2) {
     await logProcessError(adapters, txid, `invalid profile pic push data count ${pushDatas.length}`)
@@ -11,6 +11,10 @@ export async function handleSetProfilePic (ctx) {
   }
 
   const url = utf8FromPush(pushDatas[1])
+  if (!url.length) {
+    await logProcessError(adapters, txid, 'empty profile pic url')
+    return
+  }
   if (url.length > MAX_POST_SIZE) {
     await logProcessError(adapters, txid, 'profile pic url too large')
     return

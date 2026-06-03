@@ -26,9 +26,24 @@ describe('#IndexBlocks', () => {
             }
           }]
         })
+      },
+      rpc: {
+        getBlockHash: sandbox.stub().resolves('block-hash-1'),
+        getBlock: sandbox.stub().resolves({ tx: [], time: 1500000000 })
+      },
+      filterBlock: {
+        filterMemoTxs: sandbox.stub().resolves([])
       }
     }
     uut = new IndexBlocks({ adapters })
+    uut.retryQueue = {
+      addToQueue: sandbox.stub().callsFake(async (fn, arg) => {
+        if (fn === adapters.rpc.getBlockHash) return adapters.rpc.getBlockHash(arg)
+        if (fn === adapters.rpc.getBlock) return adapters.rpc.getBlock(arg)
+        throw new Error('Unexpected addToQueue call')
+      })
+    }
+    uut.filterBlock = adapters.filterBlock
   })
 
   afterEach(() => sandbox.restore())
@@ -36,8 +51,9 @@ describe('#IndexBlocks', () => {
   describe('#processMemoTxs', () => {
     it('should process all memo txs in parallel', async () => {
       const processMemoTx = sandbox.stub(uut, 'processMemoTx').resolves(true)
+      const blockSeen = 1500000000000
 
-      await uut.processMemoTxs(['tx-a', 'tx-b', 'tx-c'], 600000)
+      await uut.processMemoTxs(['tx-a', 'tx-b', 'tx-c'], 600000, blockSeen)
 
       assert.equal(processMemoTx.callCount, 3)
       assert.deepEqual(
@@ -46,6 +62,7 @@ describe('#IndexBlocks', () => {
       )
       processMemoTx.getCalls().forEach((call) => {
         assert.equal(call.args[1], 600000)
+        assert.equal(call.args[2], blockSeen)
       })
     })
 
@@ -56,11 +73,23 @@ describe('#IndexBlocks', () => {
         .onThirdCall().resolves(true)
 
       try {
-        await uut.processMemoTxs(['tx-a', 'tx-b', 'tx-c'], 600000)
+        await uut.processMemoTxs(['tx-a', 'tx-b', 'tx-c'], 600000, 1500000000000)
         assert.fail('Expected processMemoTxs to throw')
       } catch (err) {
         assert.include(err.message, 'db error')
       }
+    })
+  })
+
+  describe('#processBlock', () => {
+    it('should pass block.time in milliseconds to processMemoTxs', async () => {
+      const processMemoTxs = sandbox.stub(uut, 'processMemoTxs').resolves(true)
+      adapters.filterBlock.filterMemoTxs.resolves(['tx-a', 'tx-b'])
+
+      await uut.processBlock(600000)
+
+      assert.equal(processMemoTxs.callCount, 1)
+      assert.deepEqual(processMemoTxs.firstCall.args, [['tx-a', 'tx-b'], 600000, 1500000000000])
     })
   })
 })

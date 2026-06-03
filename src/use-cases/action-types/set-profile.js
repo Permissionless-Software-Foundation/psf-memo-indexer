@@ -1,9 +1,9 @@
-import { utf8FromPush, logProcessError } from './helpers.js'
+import { utf8FromPush, logProcessError, normalizeTwoPushMemoDatas } from './helpers.js'
 import { MAX_POST_SIZE } from '../../lib/memo-codes.js'
 
 export async function handleSetProfile (ctx) {
   const { adapters, txid, signerAddr, decoded, seen } = ctx
-  const { pushDatas } = decoded
+  const pushDatas = normalizeTwoPushMemoDatas(decoded.pushDatas)
 
   if (pushDatas.length !== 2) {
     await logProcessError(adapters, txid, `invalid profile push data count ${pushDatas.length}`)

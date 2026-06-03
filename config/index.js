@@ -27,5 +27,9 @@ export default {
     ? parseInt(process.env.START_BLOCK_HEIGHT)
     : 525000,
 
-  exitOnMissingBackup: process.env.EXIT_ON_MISSING_BACKUP === 'true'
+  exitOnMissingBackup: process.env.EXIT_ON_MISSING_BACKUP === 'true',
+
+  debugLevel: process.env.DEBUG_LEVEL !== undefined
+    ? parseInt(process.env.DEBUG_LEVEL, 10)
+    : 0
 }

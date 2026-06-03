@@ -52,7 +52,7 @@ async function start () {
         }
 
         try {
-          await useCases.indexBlocks.processMemoTx(tx, blockHeight + 1)
+          await useCases.indexBlocks.processMemoTx(tx, blockHeight + 1, Date.now())
         } catch (err) {
           console.error(`Error indexing mempool tx ${tx}:`, err.message)
         }

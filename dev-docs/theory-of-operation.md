@@ -83,6 +83,9 @@ sequenceDiagram
 
 Before heavy work, the indexer checks `GET /level/ptx/{txid}`. If present, the tx is skipped. After successful handling, it `POST`s a ptx record `{ processedAt, blockHeight }`.
 
+- **`seen`** on indexed entities (profiles, posts, likes, etc.) is the on-chain block header time in **Unix epoch milliseconds** (`block.time * 1000` from the BCH full node).
+- **`processedAt`** on ptx records is indexer wall-clock time in milliseconds (`Date.now()` when the tx was processed).
+
 **Nuance:** If a handler partially fails mid-tx, v1 does not roll back prior writes in that tx. The Go indexer uses richer DB transactions; PSF v1 relies on idempotency only at tx boundaries. See tradeoffs doc.
 
 ### Signer address
