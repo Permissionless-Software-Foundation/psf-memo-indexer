@@ -12,7 +12,7 @@ class FilterBlock {
       throw new Error('Adapters required for filter-block.js')
     }
     this.adapters = localConfig.adapters
-    this.pQueue = new PQueue({ concurrency: 20 })
+    this.pQueue = new PQueue({ concurrency: config.filterConcurrency })
     this.pRetry = pRetry
     this.attempts = 5
     this.filterMemoTxs = this.filterMemoTxs.bind(this)

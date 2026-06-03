@@ -3,7 +3,7 @@ import { MAX_REPLY_SIZE } from '../../lib/memo-codes.js'
 import { handlePost } from './post.js'
 
 export async function handleReply (ctx) {
-  const { adapters, txid, signerAddr, decoded, seen } = ctx
+  const { adapters, txid, decoded } = ctx
   const { pushDatas } = decoded
 
   if (pushDatas.length !== 3) {
