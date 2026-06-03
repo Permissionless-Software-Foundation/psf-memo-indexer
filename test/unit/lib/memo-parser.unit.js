@@ -2,7 +2,9 @@ import { assert } from 'chai'
 import {
   decodeMemoOpReturn,
   parseScriptPushDatas,
-  isMemoScript
+  isMemoScript,
+  getSignerAddress,
+  getAddressFromUnlockScriptHex
 } from '../../../src/lib/memo-parser.js'
 import { CODE_POST, CODE_PREFIX } from '../../../src/lib/memo-codes.js'
 
@@ -36,6 +38,51 @@ describe('#memo-parser', () => {
   describe('#isMemoScript', () => {
     it('should detect memo script', () => {
       assert.equal(isMemoScript(POST_OP_RETURN_HEX), true)
+    })
+  })
+
+  describe('#getAddressFromUnlockScriptHex', () => {
+    const SCRIPT_SIG_1 =
+      '483045022100e15e18048b78e744fe8e440eb2687b5d4eb7009140d5e71950d4351c6e3bf2ef022031b0dab7326846a58e16f6a753e0d011514f827d2adacde63912daa3f85636c5412103833927b98fab40d5f857214d802ba42ea21087105b81e9bff57bf2486c9ff171'
+    const SCRIPT_SIG_2 =
+      '483045022100aa35ee315859b63f92e7878304364635943b28b2334dfd796a51cb2e0b284fe3022033e852b7c965f36c7d6eecc577b01218d611450c80e75af1fd41e76cfc7af81c4121035c5970c98aa4543271348bb18de4fb04122af87555fc4411c376493cc85594c3'
+
+    it('should derive cash address from real memo tx scriptSig', () => {
+      const addr = getAddressFromUnlockScriptHex(SCRIPT_SIG_1)
+      assert.isString(addr)
+      assert.include(addr, 'bitcoincash:')
+      assert.equal(
+        addr,
+        'bitcoincash:qzd7s66p0mh97s2tqkrwacx4dazwataul5m9f9yw68'
+      )
+    })
+
+    it('should derive cash address from second sample scriptSig', () => {
+      const addr = getAddressFromUnlockScriptHex(SCRIPT_SIG_2)
+      assert.equal(
+        addr,
+        'bitcoincash:qrnr8q2ndfmzgfehz5txel9jpq3lrwhvt5f270fnd4'
+      )
+    })
+  })
+
+  describe('#getSignerAddress', () => {
+    const SCRIPT_SIG_1 =
+      '483045022100e15e18048b78e744fe8e440eb2687b5d4eb7009140d5e71950d4351c6e3bf2ef022031b0dab7326846a58e16f6a753e0d011514f827d2adacde63912daa3f85636c5412103833927b98fab40d5f857214d802ba42ea21087105b81e9bff57bf2486c9ff171'
+
+    it('should return signer from txDetails with vin scriptSig', () => {
+      const txDetails = {
+        vin: [{ scriptSig: { hex: SCRIPT_SIG_1 } }]
+      }
+      const addr = getSignerAddress(txDetails)
+      assert.equal(
+        addr,
+        'bitcoincash:qzd7s66p0mh97s2tqkrwacx4dazwataul5m9f9yw68'
+      )
+    })
+
+    it('should return null when no vin', () => {
+      assert.equal(getSignerAddress({}), null)
     })
   })
 })

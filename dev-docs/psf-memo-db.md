@@ -81,6 +81,29 @@ All routes are under `/level` with a consistent CRUD pattern generated from `ENT
 | `processerror` | `txid` | `errorData` | txid |
 | `ptx` | `txid` | `ptxData` | txid |
 
+### Read routes (query use cases)
+
+| Method | Path | Query params |
+|--------|------|----------------|
+| `GET` | `/profile/recent` | `limit` (default 100, max 100), `offset` (default 0) |
+
+Returns profiles sorted by **block height** (newest first), using each profile’s `txid` to look up `blockHeight` in `ptxs`. Tie-breaker: `seen` timestamp descending.
+
+Response shape:
+
+```json
+{
+  "profiles": [
+    { "addr": "bitcoincash:q...", "text": "...", "txid": "...", "seen": 123, "blockHeight": 600000 }
+  ],
+  "pagination": { "limit": 100, "offset": 0, "total": 42, "hasMore": false }
+}
+```
+
+Implementation: `profile-query` adapter (LevelDB scan) → `list-recent-profiles` use case → `/profile` REST controller.
+
+**Tradeoff:** Full scan of `profiles` on each request; suitable for moderate corpus sizes. A height-indexed store would be needed for very large archives.
+
 ### Status (special case)
 
 Matches SLP status semantics:

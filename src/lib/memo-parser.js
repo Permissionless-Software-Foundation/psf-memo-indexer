@@ -111,19 +111,61 @@ export function findMemoOutputs (txDetails) {
   return matches
 }
 
+/**
+ * Extract compressed or uncompressed pubkey from a P2PKH unlocking script.
+ * Mirrors Go wallet.GetP2pkhAddrFromUnlockScript (pubkey push after signature).
+ */
+export function getPubkeyFromUnlockScript (scriptBuf) {
+  if (!scriptBuf || !scriptBuf.length) return null
+
+  let decoded
+  try {
+    decoded = getBchjs().Script.decode(scriptBuf)
+  } catch (err) {
+    return null
+  }
+
+  if (!decoded || !decoded.length) return null
+
+  for (let i = decoded.length - 1; i >= 0; i--) {
+    const chunk = decoded[i]
+    if (Buffer.isBuffer(chunk) && (chunk.length === 33 || chunk.length === 65)) {
+      return chunk
+    }
+  }
+
+  return null
+}
+
+/**
+ * Derive cash address from unlocking script hex (P2PKH spend).
+ */
+export function getAddressFromUnlockScriptHex (scriptHex) {
+  if (!scriptHex || typeof scriptHex !== 'string') return null
+
+  try {
+    const scriptBuf = Buffer.from(scriptHex, 'hex')
+    const pubkey = getPubkeyFromUnlockScript(scriptBuf)
+    if (!pubkey) return null
+
+    const hash160 = getBchjs().Crypto.hash160(pubkey)
+    return getBchjs().Address.hash160ToCash(hash160)
+  } catch (err) {
+    return null
+  }
+}
+
 export function getSignerAddress (txDetails) {
   if (!txDetails || !txDetails.vin) return null
 
   for (const vin of txDetails.vin) {
-    if (!vin.scriptSig || !vin.scriptSig.hex) continue
-    try {
-      const scriptBuf = Buffer.from(vin.scriptSig.hex, 'hex')
-      const addr = getBchjs().Script.getAddressFromScriptSig(scriptBuf)
-      if (addr) return addr
-    } catch (err) {
-      continue
-    }
+    const scriptHex = vin.scriptSig && vin.scriptSig.hex
+    if (!scriptHex) continue
+
+    const addr = getAddressFromUnlockScriptHex(scriptHex)
+    if (addr) return addr
   }
+
   return null
 }
 
