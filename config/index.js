@@ -16,6 +16,13 @@ export default {
   zmqBlockQueueMax: process.env.ZMQ_BLOCK_QUEUE_MAX ? parseInt(process.env.ZMQ_BLOCK_QUEUE_MAX) : 1000,
   txCacheMax: process.env.TX_CACHE_MAX ? parseInt(process.env.TX_CACHE_MAX) : 100000,
 
+  filterConcurrency: process.env.FILTER_CONCURRENCY
+    ? parseInt(process.env.FILTER_CONCURRENCY)
+    : 20,
+  memoTxConcurrency: process.env.MEMO_TX_CONCURRENCY
+    ? parseInt(process.env.MEMO_TX_CONCURRENCY)
+    : 20,
+
   startBlockHeight: process.env.START_BLOCK_HEIGHT
     ? parseInt(process.env.START_BLOCK_HEIGHT)
     : 525000,

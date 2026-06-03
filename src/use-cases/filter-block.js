@@ -4,6 +4,7 @@
 
 import PQueue from 'p-queue'
 import pRetry from 'p-retry'
+import config from '../../config/index.js'
 
 class FilterBlock {
   constructor (localConfig = {}) {
@@ -27,17 +28,17 @@ class FilterBlock {
   }
 
   async filterMemoTxs (txids) {
-    const memoTxs = []
+    const memoTxSet = new Set()
     const tasks = txids.map((txid) => async () => {
       const isMemo = await this.retryWrapper(
         this.adapters.transaction.isMemoTx.bind(this.adapters.transaction),
         txid
       )
-      if (isMemo) memoTxs.push(txid)
+      if (isMemo) memoTxSet.add(txid)
     })
 
     await this.pQueue.addAll(tasks)
-    return memoTxs
+    return txids.filter((txid) => memoTxSet.has(txid))
   }
 }
 

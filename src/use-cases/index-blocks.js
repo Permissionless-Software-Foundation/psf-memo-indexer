@@ -3,6 +3,8 @@
 */
 
 import RetryQueue from '@chris.troutner/retry-queue'
+import PQueue from 'p-queue'
+import config from '../../config/index.js'
 import FilterBlock from './filter-block.js'
 import { findMemoOutputs, getSignerAddress } from '../lib/memo-parser.js'
 import { dispatchMemoAction } from './action-types/index.js'
@@ -15,6 +17,7 @@ class IndexBlocks {
     this.adapters = localConfig.adapters
     this.filterBlock = new FilterBlock({ adapters: this.adapters })
     this.retryQueue = new RetryQueue()
+    this.pQueue = new PQueue({ concurrency: config.memoTxConcurrency })
     this.processBlock = this.processBlock.bind(this)
     this.processMemoTx = this.processMemoTx.bind(this)
     this.processMemoTxs = this.processMemoTxs.bind(this)
@@ -63,9 +66,10 @@ class IndexBlocks {
   }
 
   async processMemoTxs (txids, blockHeight) {
-    for (let i = 0; i < txids.length; i++) {
-      await this.processMemoTx(txids[i], blockHeight)
-    }
+    const tasks = txids.map((txid) => async () => {
+      await this.processMemoTx(txid, blockHeight)
+    })
+    await this.pQueue.addAll(tasks)
     return true
   }
 

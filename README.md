@@ -61,6 +61,8 @@ See `.env-example`. Key variables:
 | `RPC_IP` / `RPC_PORT` | `172.17.0.1` / `8332` | Full node RPC |
 | `ZMQ_PORT` | `28332` | Full node ZMQ |
 | `TX_REST_API_PORT` | `5455` | TX indexer control API |
+| `FILTER_CONCURRENCY` | `20` | Parallel Memo tx detection per block |
+| `MEMO_TX_CONCURRENCY` | `20` | Parallel Memo tx processing per block |
 
 ## Tests
 

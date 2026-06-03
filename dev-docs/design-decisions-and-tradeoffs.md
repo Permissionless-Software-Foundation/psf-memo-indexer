@@ -51,15 +51,21 @@ This document records **why** the Memo indexer stack looks the way it does, incl
 
 **Risk:** Indexer state diverges from memo.sv for excluded actions until handlers are added.
 
-## 4. No DAG sort within blocks
+## 4. Parallel processing within blocks (no DAG sort)
 
-**Decision:** Process filtered Memo txids in block order, sequentially.
+**Decision:** Filter and process Memo txs concurrently within a block using `p-queue`. Default concurrency is 20 for both phases (`FILTER_CONCURRENCY`, `MEMO_TX_CONCURRENCY`). Filter results are reordered to match block tx order before processing starts.
 
-**SLP context:** SEND transactions may spend token outputs created earlier in the same block; DAG sort orders them correctly.
+**SLP context:** SEND transactions may spend token outputs created earlier in the same block; DAG sort orders them correctly and writes must stay serial when UTXO state overlaps.
 
-**Memo context:** Social actions do not consume each other’s UTXOs in a token graph. Replies reference parent txids by hash but do not require reordering spends within the block.
+**Memo context:** Social actions do not consume each other’s UTXOs in a token graph. Most handler writes are keyed by `txid` and are independent across transactions. Parallel `processMemoTx` is safe for typical blocks.
 
-**Tradeoff:** If future Memo actions introduce intra-block dependencies, DAG or topological sort may be needed—unlikely for current social ops.
+**Soft ordering:** Likes that reference a post in the same block may compute `tip = 0` if the post handler has not finished yet. Replies still persist parent/child links and post bodies regardless of completion order. Profile/follow handlers keyed by address can race if the same signer emits multiple updates in one block (rare).
+
+**Within a single tx:** Multiple Memo `OP_RETURN` outputs in one transaction are still dispatched sequentially inside `processMemoTx`.
+
+**Tradeoff:** Higher throughput vs. HTTP contention on `psf-memo-db`. Lower `MEMO_TX_CONCURRENCY` if the DB service becomes the bottleneck.
+
+**Alternative rejected:** Full serial processing—simple but leaves RPC/DB latency on the table during IBD when blocks contain many unrelated Memo txs.
 
 ## 5. Scan all transaction outputs for OP_RETURN
 

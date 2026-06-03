@@ -63,7 +63,7 @@ sequenceDiagram
   loop each candidate txid
     FB->>TX: isMemoTx(txid)
   end
-  loop each memo txid
+  loop each memo txid (parallel, up to MEMO_TX_CONCURRENCY)
     BI->>BI: processMemoTx(txid)
     BI->>DB: reads/writes via handlers
   end
@@ -71,11 +71,11 @@ sequenceDiagram
 
 **Step 1 — Fetch block:** `getblock` returns the list of transaction ids in the block (verbosity 1).
 
-**Step 2 — Filter:** `filterMemoTxs` runs up to 20 concurrent `isMemoTx` checks (`p-queue`). Each check loads the transaction (with in-memory cache in `transaction.js`) and scans **all outputs** for a Memo `OP_RETURN`.
+**Step 2 — Filter:** `filterMemoTxs` runs up to `FILTER_CONCURRENCY` (default 20) concurrent `isMemoTx` checks (`p-queue`). Each check loads the transaction (with in-memory cache in `transaction.js`) and scans **all outputs** for a Memo `OP_RETURN`. Results are returned in **block tx order** (parallel checks use a set, then the original block list is filtered).
 
 **Why scan all outputs?** Unlike SLP, which conventionally places token data in `vout[0]`, Memo actions may appear in any output’s `scriptPubKey`. The Go reference iterates every `TxOut`.
 
-**Step 3 — Process:** For each Memo txid, `processMemoTx` runs sequentially within the block (no DAG sort—Memo social actions do not form token-like dependency chains within a block).
+**Step 3 — Process:** `processMemoTxs` runs up to `MEMO_TX_CONCURRENCY` (default 20) concurrent `processMemoTx` calls via `p-queue`. There is no DAG sort—Memo social actions do not form token-like dependency chains within a block. Multiple OP_RETURN outputs in a **single** transaction are still handled sequentially inside `processMemoTx`.
 
 ## Phase 3: Processing a single Memo transaction
 

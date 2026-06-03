@@ -69,7 +69,7 @@ async function start () {
     console.log('TX indexer started.')
 
     let loopCnt = 0
-    let liveStatus = status
+    const liveStatus = status
     do {
       let blockHeight = await queue.addToQueue(adapters.rpc.getBlockCount, {})
       const block = adapters.zmq.getBlock()

@@ -60,8 +60,8 @@ Controllers
         │
         ▼
 Use cases
-  index-blocks.js      — processBlock, processMemoTx
-  filter-block.js      — filterMemoTxs (parallel pre-check)
+  index-blocks.js      — processBlock, processMemoTx (parallel per block)
+  filter-block.js      — filterMemoTxs (parallel pre-check, block order preserved)
   state.js             — synced block height
   action-types/*.js    — per Memo action handlers
   utils.js
@@ -157,7 +157,7 @@ Each store is a separate LevelDB with JSON values. Keys are txids, addresses, or
 | `zeromq` | Indexer | Subscribe to full node |
 | `@chris.troutner/retry-queue` | Indexer | Retry RPC on transient failure |
 | `axios` | Indexer | psf-memo-db REST client |
-| `p-queue` / `p-retry` | Indexer | Parallel block filter with retries |
+| `p-queue` / `p-retry` | Indexer | Parallel block filter and parallel per-tx processing within a block |
 | `express` | Indexer | TX indexer control API |
 | `level` | psf-memo-db | Embedded JSON LevelDB |
 | `koa` + `koa-router` | psf-memo-db | REST server |
