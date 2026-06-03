@@ -138,7 +138,7 @@ Each store is a separate LevelDB with JSON values. Keys are txids, addresses, or
 | `status` | `status` | `syncedBlockHeight`, `chainBlockHeight`, `startBlockHeight` |
 | `posts` | txid | Author address, text, timestamp |
 | `postParents` | child txid | Parent txid (reply) |
-| `postChildren` | parent txid | Reverse index for replies |
+| `postChildren` | `parentTxid:childTxid` | One reply link per parent–child pair |
 | `likes` | like txid | Post txid, liker, optional tip |
 | `names` | address | Display name + provenance txid |
 | `profiles` | address | Profile text |

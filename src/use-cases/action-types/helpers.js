@@ -57,3 +57,7 @@ export function followKey (followerAddr, followeeAddr) {
 export function roomKey (roomName, txid) {
   return `${roomName}:${txid}`
 }
+
+export function postChildKey (parentTxid, childTxid) {
+  return `${parentTxid}:${childTxid}`
+}

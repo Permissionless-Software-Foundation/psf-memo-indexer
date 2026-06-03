@@ -1,4 +1,4 @@
-import { utf8FromPush, txHashFromPush, logProcessError } from './helpers.js'
+import { utf8FromPush, txHashFromPush, logProcessError, postChildKey } from './helpers.js'
 import { MAX_REPLY_SIZE } from '../../lib/memo-codes.js'
 import { handlePost } from './post.js'
 
@@ -24,7 +24,7 @@ export async function handleReply (ctx) {
   }
 
   await adapters.postParentDb.create(txid, { parentTxid, childTxid: txid, blockHeight })
-  await adapters.postChildDb.create(parentTxid, { parentTxid, childTxid: txid, blockHeight })
+  await adapters.postChildDb.create(postChildKey(parentTxid, txid), { parentTxid, childTxid: txid, blockHeight })
 
   await handlePost({ ...ctx, decoded: { ...decoded, pushDatas: [pushDatas[0], pushDatas[2]] } })
 }

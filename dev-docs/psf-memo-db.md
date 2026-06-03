@@ -71,7 +71,7 @@ All routes are under `/level` with a consistent CRUD pattern generated from `ENT
 |-------|---------|-----------|-------------|
 | `post` | `txid` | `postData` | transaction id |
 | `postparent` | `txid` | `parentData` | child txid |
-| `postchild` | `txid` | `childData` | parent txid |
+| `postchild` | `key` | `childData` | `parentTxid:childTxid` |
 | `like` | `txid` | `likeData` | like txid |
 | `name` | `addr` | `nameData` | cash address |
 | `profile` | `addr` | `profileData` | cash address |
@@ -187,7 +187,7 @@ Common fields on indexed documents:
 | profilePic | addr | `url`, `txid`, `seen`, `addr`, `blockHeight` |
 | like | txid | `addr`, `postTxid`, `seen`, `tip`, `blockHeight` |
 | follow | composite key | `followerAddr`, `followeePkHash`, `unfollow`, `txid`, `seen`, `blockHeight` |
-| postParent / postChild | txid | `parentTxid`, `childTxid`, `blockHeight` |
+| postParent / postChild | txid / `parentTxid:childTxid` | `parentTxid`, `childTxid`, `blockHeight` |
 | room | composite key | `room`, `txid`, `seen`, `type`, `blockHeight` (+ `addr` for follows) |
 | processError | txid | `error`, `ts`, `blockHeight` |
 
